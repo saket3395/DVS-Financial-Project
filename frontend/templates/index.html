@@ -1,65 +1,68 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="utf-8">
-  <title>DVS Financial Project</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DVS Financial Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
-  <header>
-    <h1>DVS Financial Screener</h1>
-    <p class="meta">
-      Last updated: <strong>{{ generated_at | fmt_dt }}</strong>
-      &nbsp;·&nbsp; Stocks passing filters: <strong>{{ count }}</strong>
-    </p>
-  </header>
+  <nav class="navbar navbar-expand sticky-top px-3 bg-body-tertiary border-bottom">
+    <span class="navbar-brand fw-semibold">DVS Financial Dashboard</span>
+    <div class="d-flex align-items-center gap-3 ms-auto small text-secondary">
+      <span>Updated: <span id="updated-at">—</span></span>
+      <span>Stocks: <span id="stock-count" class="text-light fw-semibold">0</span></span>
+      <span class="badge text-bg-secondary" id="refresh-badge">live</span>
+    </div>
+  </nav>
 
-  <main>
-    {% if stocks %}
-    <table id="grid">
-      <thead>
-        <tr>
-          {% for col in stocks[0].keys() %}
-          <th data-col="{{ loop.index0 }}">{{ col }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for s in stocks %}
-        <tr>
-          {% for v in s.values() %}<td>{{ v if v is not none else '—' }}</td>{% endfor %}
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-    <p class="empty">No stocks matching filters yet. Run <code>python backend/run.py</code> to generate data.</p>
-    {% endif %}
+  <main class="container-fluid py-3">
+    <div class="row g-3">
+      <aside class="col-12 col-lg-3">
+        <div class="panel h-100">
+          <div class="panel-header d-flex justify-content-between align-items-center">
+            <span>Signals</span>
+            <div class="btn-group btn-group-sm" role="group" id="signal-filters">
+              <button type="button" class="btn btn-outline-success active" data-filter="ALL">All</button>
+              <button type="button" class="btn btn-outline-success" data-filter="BUY">Buy</button>
+              <button type="button" class="btn btn-outline-warning" data-filter="NEUTRAL">Neutral</button>
+              <button type="button" class="btn btn-outline-danger" data-filter="SELL">Sell</button>
+            </div>
+          </div>
+          <div class="panel-body p-0">
+            <div class="signals-list" id="signals-list"></div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="col-12 col-lg-9">
+        <div class="panel">
+          <div class="panel-header d-flex justify-content-between align-items-center">
+            <span>Chart · <span id="chart-ticker" class="text-light fw-semibold">—</span></span>
+            <div class="text-secondary small" id="chart-meta">click a signal to load OHLC</div>
+          </div>
+          <div class="panel-body">
+            <div id="chart" class="chart-host"></div>
+          </div>
+        </div>
+
+        <div class="panel mt-3">
+          <div class="panel-header d-flex justify-content-between align-items-center">
+            <span>Heatmap · upside %</span>
+            <div class="text-secondary small">green = strong · grey = neutral · red = weak</div>
+          </div>
+          <div class="panel-body">
+            <div id="heatmap" class="heatmap"></div>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 
-  <footer>A creation by Dharmil and Saket</footer>
+  <footer class="text-center text-secondary small py-3">A creation by Dharmil and Saket</footer>
 
-  <script>
-    const table = document.getElementById('grid');
-    if (table) {
-      table.querySelectorAll('th').forEach(th => {
-        let asc = true;
-        th.addEventListener('click', () => {
-          const idx = +th.dataset.col;
-          const tbody = table.tBodies[0];
-          const rows = Array.from(tbody.rows);
-          rows.sort((a, b) => {
-            const av = a.cells[idx].innerText, bv = b.cells[idx].innerText;
-            const an = parseFloat(av), bn = parseFloat(bv);
-            const numeric = !isNaN(an) && !isNaN(bn);
-            const cmp = numeric ? an - bn : av.localeCompare(bv);
-            return asc ? cmp : -cmp;
-          });
-          asc = !asc;
-          rows.forEach(r => tbody.appendChild(r));
-        });
-      });
-    }
-  </script>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 </html>

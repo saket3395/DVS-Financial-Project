@@ -1,38 +1,94 @@
 :root {
-  --bg: #0f1115;
-  --panel: #161a22;
-  --line: #242a36;
-  --text: #e6e9ef;
-  --muted: #8a93a3;
+  --bg: #0b0e14;
+  --panel: #131722;
+  --panel-2: #1a1f2c;
+  --line: #2a2f3d;
+  --muted: #6b7280;
+  --buy: #16a34a;
+  --neutral: #9ca3af;
+  --sell: #dc2626;
   --accent: #5aa9ff;
 }
-* { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html, body { background: var(--bg); }
 body {
-  background: var(--bg);
-  color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  line-height: 1.45;
+  font-size: 13px;
+  color: #e6e9ef;
 }
-header, main, footer { max-width: 1200px; margin: 0 auto; padding: 24px; }
-header h1 { margin: 0 0 6px; font-size: 22px; letter-spacing: 0.2px; }
-.meta { color: var(--muted); font-size: 13px; margin: 0; }
-table {
-  width: 100%; border-collapse: collapse; background: var(--panel);
-  border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
-  font-variant-numeric: tabular-nums; font-size: 13px;
+.navbar { background-color: var(--panel) !important; border-color: var(--line) !important; }
+.navbar-brand { color: #e6e9ef !important; letter-spacing: 0.2px; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
 }
-th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); }
-th {
-  background: #1c2230; cursor: pointer; user-select: none;
-  font-weight: 600; color: var(--accent); position: sticky; top: 0;
+.panel-header {
+  background: var(--panel-2);
+  padding: 10px 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
 }
-th:hover { background: #222a3a; }
-tbody tr:hover { background: #1a2030; }
-tbody tr:last-child td { border-bottom: none; }
-.empty { color: var(--muted); padding: 30px; text-align: center; }
-code { background: #222a3a; padding: 2px 6px; border-radius: 4px; }
-footer {
-  text-align: center; color: var(--muted); font-size: 12px;
-  border-top: 1px solid var(--line); margin-top: 32px; padding: 18px;
+.panel-body { padding: 12px; }
+.panel-body.p-0 { padding: 0; }
+
+.signals-list { max-height: 78vh; overflow-y: auto; }
+.signal-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.1s;
 }
+.signal-row:hover { background: #1d2433; }
+.signal-row.active { background: #213044; }
+.signal-row .ticker { font-weight: 700; letter-spacing: 0.3px; }
+.signal-row .price { text-align: right; font-variant-numeric: tabular-nums; }
+.signal-row .meta { color: var(--muted); font-size: 11px; }
+.signal-row .meta-right { color: var(--muted); font-size: 11px; text-align: right; }
+
+.tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+.tag-BUY { background: rgba(22,163,74,.18); color: #4ade80; border: 1px solid rgba(22,163,74,.5); }
+.tag-SELL { background: rgba(220,38,38,.18); color: #f87171; border: 1px solid rgba(220,38,38,.5); }
+.tag-NEUTRAL { background: rgba(156,163,175,.15); color: #d1d5db; border: 1px solid rgba(156,163,175,.4); }
+
+.chart-host { width: 100%; height: 420px; position: relative; }
+
+.heatmap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 4px;
+}
+.heat-cell {
+  padding: 8px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.06s, border-color 0.1s;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+.heat-cell:hover { border-color: rgba(255,255,255,0.4); transform: scale(1.04); }
+.heat-cell .sym { font-weight: 700; display: block; }
+.heat-cell .val { opacity: 0.85; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--panel); }
+::-webkit-scrollbar-thumb { background: #2c3245; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #3a4258; }
+
+footer { border-top: 1px solid var(--line); margin-top: 16px; }
