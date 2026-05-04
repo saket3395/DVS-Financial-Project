@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>DVS Financial Project</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>DVS Financial Screener</h1>
+    <p class="meta">
+      Last updated: <strong>{{ generated_at | fmt_dt }}</strong>
+      &nbsp;·&nbsp; Stocks passing filters: <strong>{{ count }}</strong>
+    </p>
+  </header>
+
+  <main>
+    {% if stocks %}
+    <table id="grid">
+      <thead>
+        <tr>
+          {% for col in stocks[0].keys() %}
+          <th data-col="{{ loop.index0 }}">{{ col }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in stocks %}
+        <tr>
+          {% for v in s.values() %}<td>{{ v if v is not none else '—' }}</td>{% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No stocks matching filters yet. Run <code>python backend/run.py</code> to generate data.</p>
+    {% endif %}
+  </main>
+
+  <footer>A creation by Dharmil and Saket</footer>
+
+  <script>
+    const table = document.getElementById('grid');
+    if (table) {
+      table.querySelectorAll('th').forEach(th => {
+        let asc = true;
+        th.addEventListener('click', () => {
+          const idx = +th.dataset.col;
+          const tbody = table.tBodies[0];
+          const rows = Array.from(tbody.rows);
+          rows.sort((a, b) => {
+            const av = a.cells[idx].innerText, bv = b.cells[idx].innerText;
+            const an = parseFloat(av), bn = parseFloat(bv);
+            const numeric = !isNaN(an) && !isNaN(bn);
+            const cmp = numeric ? an - bn : av.localeCompare(bv);
+            return asc ? cmp : -cmp;
+          });
+          asc = !asc;
+          rows.forEach(r => tbody.appendChild(r));
+        });
+      });
+    }
+  </script>
+</body>
+</html>
