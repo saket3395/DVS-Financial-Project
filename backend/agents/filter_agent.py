@@ -1,33 +1,53 @@
+import os
+
 from config import FILTERS
 
-REQUIRED = ["price", "mcap_cr", "debt_equity", "pbv", "pe", "industry_pe",
-            "peg", "roce", "roe", "promoter", "upside_pct", "rsi"]
+CORE = ["price", "mcap_cr", "rsi", "upside_pct"]
+OPTIONAL = ["debt_equity", "pbv", "pe", "peg", "roce", "roe", "promoter"]
+REQUIRED = CORE + OPTIONAL + ["industry_pe"]
+
+STRICT = os.environ.get("DVS_STRICT", "0") == "1"
+
+
+def _f(v):
+    if v is None:
+        return None
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
 
 
 def passes(stock: dict) -> bool:
-    for k in REQUIRED:
-        v = stock.get(k)
-        if v is None:
-            return False
-        try:
-            float(v)
-        except (TypeError, ValueError):
+    f = FILTERS
+    g = stock.get
+    fields = (REQUIRED if STRICT else CORE)
+    for k in fields:
+        if _f(g(k)) is None:
             return False
 
-    f = FILTERS
-    return (
-        stock["price"] < f["price_max"]
-        and stock["mcap_cr"] > f["mcap_min_cr"]
-        and stock["debt_equity"] < f["de_max"]
-        and stock["pbv"] < f["pbv_max"]
-        and stock["pe"] < stock["industry_pe"]
-        and f["peg_min"] <= stock["peg"] <= f["peg_max"]
-        and stock["roce"] >= f["roce_min"]
-        and stock["roe"] >= f["roe_min"]
-        and stock["promoter"] > f["promoter_min"]
-        and stock["upside_pct"] > f["upside_min"]
-        and f["rsi_min"] <= stock["rsi"] <= f["rsi_max"]
-    )
+    rules = {
+        "price": lambda x: x < f["price_max"],
+        "mcap_cr": lambda x: x > f["mcap_min_cr"],
+        "debt_equity": lambda x: x < f["de_max"],
+        "pbv": lambda x: x < f["pbv_max"],
+        "pe": lambda x: x < (_f(g("industry_pe")) or 1e18),
+        "peg": lambda x: f["peg_min"] <= x <= f["peg_max"],
+        "roce": lambda x: x >= f["roce_min"],
+        "roe": lambda x: x >= f["roe_min"],
+        "promoter": lambda x: x > f["promoter_min"],
+        "upside_pct": lambda x: x > f["upside_min"],
+        "rsi": lambda x: f["rsi_min"] <= x <= f["rsi_max"],
+    }
+    for k, rule in rules.items():
+        n = _f(g(k))
+        if n is None:
+            if STRICT:
+                return False
+            continue
+        if not rule(n):
+            return False
+    return True
 
 
 def filter_stocks(stocks):

@@ -36,4 +36,13 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    import os
+    cert = ROOT / "certs" / "cert.pem"
+    key = ROOT / "certs" / "key.pem"
+    if os.environ.get("DVS_HTTPS", "1") == "1" and cert.exists() and key.exists():
+        ssl_ctx = (str(cert), str(key))
+    elif os.environ.get("DVS_HTTPS", "1") == "1":
+        ssl_ctx = "adhoc"
+    else:
+        ssl_ctx = None
+    app.run(host="127.0.0.1", port=5000, debug=False, ssl_context=ssl_ctx)
