@@ -7,4 +7,5 @@ cache/
 logs/
 data/*.csv
 data/*.json
+certs/
 .DS_Store
